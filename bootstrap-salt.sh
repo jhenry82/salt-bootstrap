@@ -203,6 +203,7 @@ _WGET_ARGS=${BS_WGET_ARGS:-}
 _CURL_ARGS=${BS_CURL_ARGS:-}
 _FETCH_ARGS=${BS_FETCH_ARGS:-}
 _ENABLE_EXTERNAL_ZMQ_REPOS=${BS_ENABLE_EXTERNAL_ZMQ_REPOS:-$BS_FALSE}
+_RUN_HIGHSTATE=${BS_RUN_HIGHSTATE:-$BS_FALSE}
 _SALT_MASTER_ADDRESS=${BS_SALT_MASTER_ADDRESS:-null}
 _SALT_MINION_ID="null"
 # __SIMPLIFY_VERSION is mostly used in Solaris based distributions
@@ -274,12 +275,13 @@ usage() {
       per -p flag. You're responsible for providing the proper package name.
   -H  Use the specified http proxy for the installation
   -Z  Enable external software source for newer ZeroMQ(Only available for RHEL/CentOS/Fedora based distributions)
+  -T  Run a highstate at the very end of provisioning
 
 EOT
 }   # ----------  end of function usage  ----------
 
 
-while getopts ":hvnDc:Gg:k:MSNXCPFUKIA:i:Lp:H:Z" opt
+while getopts ":hvnDc:Gg:k:MSNXCPFUKIA:i:Lp:H:Z:T" opt
 do
   case "${opt}" in
 
@@ -330,6 +332,7 @@ do
     p )  _EXTRA_PACKAGES="$_EXTRA_PACKAGES $OPTARG"     ;;
     H )  _HTTP_PROXY="$OPTARG"                          ;;
     Z)   _ENABLE_EXTERNAL_ZMQ_REPOS=$BS_TRUE            ;;
+    T)   _RUN_HIGHSTATE=$BS_TRUE                        ;;
 
 
     \?)  echo
@@ -4937,6 +4940,11 @@ if [ "$DAEMONS_RUNNING_FUNC" != "null" ] && [ $_START_DAEMONS -eq $BS_TRUE ]; th
     fi
 fi
 
+if [ "$_RUN_HIGHSTATE" -eq $BS_TRUE ]; then
+  echoinfo "Running salt-call state.highstate"
+  salt-call state.highstate -l warning
+  echoinfo "Highstate complete!"
+fi
 
 # Done!
 if [ "$_CONFIG_ONLY" -eq $BS_FALSE ]; then
