@@ -4942,7 +4942,7 @@ fi
 
 if [ "$_RUN_HIGHSTATE" -eq $BS_TRUE ]; then
   echoinfo "Running salt-call state.highstate"
-  salt-call state.highstate -l warning
+  salt-call state.highstate -l quiet >/dev/null 2>&1
   echoinfo "Highstate complete!"
 fi
 
